@@ -1,0 +1,49 @@
+<div class="form-container">
+  <h2>Dynamic Form Builder</h2>
+  <div class="field-buttons">
+    <button type="button" (click)="addField('text', 'Username', 'Enter username', [], true, [{ type: 'minLength', value: 3 }, { type: 'maxLength', value: 15 }])">Add Username</button>
+    <button type="button" (click)="addField('textarea', 'About You', 'Tell me about yourself', [], true, [{ type: 'maxLength', value: 200 }])">Add About You</button>
+    <button type="button" (click)="addField('dropdown', 'States', '', ['Madhya pradesh', 'Gujrat', 'Maharashtra'], true)">Add State</button>
+    <button type="button" (click)="addField('checkbox', 'Hobbies', '', ['Coding', 'Traveling', 'Cricket'])">Add Hobbies</button>
+    <button type="button" (click)="addField('radio', 'Gender', '', ['Male', 'Female'], true)">Add Gender</button>
+  </div>
+
+  <form [formGroup]="dynamicForm" (ngSubmit)="onSubmit()">
+    <div *ngFor="let field of fields; let i = index" class="form-field">
+      <label>{{ field.label }} <span class="required-marker" *ngIf="field.isRequired">*</span></label>
+
+      <ng-container [ngSwitch]="field.type">
+        <input *ngSwitchCase="'text'" type="text" [formControlName]="field.label" [placeholder]="field.placeholder" class="form-control" [class.is-invalid]="isFieldInvalid(field.label)" />
+        
+        <textarea *ngSwitchCase="'textarea'" [formControlName]="field.label" [placeholder]="field.placeholder" class="form-control" [class.is-invalid]="isFieldInvalid(field.label)"></textarea>
+
+        <select *ngSwitchCase="'dropdown'" [formControlName]="field.label" class="form-control" [class.is-invalid]="isFieldInvalid(field.label)">
+          <option value="" disabled>Select an option</option>
+          <option *ngFor="let option of field.options" [value]="option">{{ option }}</option>
+          <option *ngIf="!field.options || field.options.length === 0" disabled>No options available</option>
+        </select>
+
+        <div *ngSwitchCase="'checkbox'" class="checkbox-group">
+          <div *ngFor="let option of field.options; let j = index" class="checkbox-item">
+            <label>
+              <input type="checkbox" (change)="onCheckboxChange(field, j, $event)" [checked]="getFormArray(field).at(j).value" class="form-check-input" /> {{ option }}
+            </label>
+          </div>
+        </div>
+
+        <div *ngSwitchCase="'radio'" class="radio-group">
+          <label *ngFor="let option of field.options">
+            <input type="radio" [formControlName]="field.label" [value]="option" class="form-check-input" /> {{ option }}
+          </label>
+        </div>
+      </ng-container>
+
+      <div class="error-message" *ngIf="isFieldInvalid(field.label)">
+        {{ getErrorMessage(field) }}
+      </div>
+
+      <button type="button" (click)="removeField(i)" class="remove-button">Remove</button>
+    </div>
+    <button type="submit" class="submit-button">Submit</button>
+  </form>
+</div>
